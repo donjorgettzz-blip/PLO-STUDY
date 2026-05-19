@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLO — Module 1: BvB Preflop</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f11;
+    --bg2: #16181c;
+    --bg3: #1e2127;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8e6e0;
+    --text2: #8a8880;
+    --text3: #555350;
+    --blue: #4a9eff;
+    --blue-dim: rgba(74,158,255,0.12);
+    --blue-bg: rgba(74,158,255,0.08);
+    --green: #3ecf8e;
+    --green-dim: rgba(62,207,142,0.12);
+    --amber: #f59e0b;
+    --amber-dim: rgba(245,158,11,0.10);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.10);
+    --radius: 10px;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+  .header { padding: 32px 40px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .module-label { font-family: var(--mono); font-size: 11px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .module-title { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+  .module-title span { color: var(--blue); }
+  .header-meta { font-family: var(--mono); font-size: 11px; color: var(--text3); text-align: right; line-height: 1.8; }
+
+  .nav { display: flex; gap: 2px; padding: 16px 40px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .nav-tab { padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; color: var(--text2); transition: all 0.15s; border: 1px solid transparent; background: none; user-select: none; }
+  .nav-tab:hover { color: var(--text); background: var(--bg3); }
+  .nav-tab.active { color: var(--blue); background: var(--blue-bg); border-color: rgba(74,158,255,0.2); }
+
+  .content { display: none; padding: 32px 40px; max-width: 960px; }
+  .content.active { display: block; }
+
+  .section { margin-bottom: 32px; }
+  .section-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 10px; }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+
+  .freq-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .freq-label { font-family: var(--mono); font-size: 11px; color: var(--text3); min-width: 72px; }
+  .freq-bar { flex: 1; height: 20px; border-radius: 4px; overflow: hidden; display: flex; background: var(--bg3); }
+  .seg-fold  { background: #3b7dd8; }
+  .seg-call  { background: #2a9d6e; }
+  .seg-pot   { background: #c2561a; }
+  .seg-allin { background: #b91c1c; }
+  .freq-nums { font-family: var(--mono); font-size: 11px; color: var(--text3); min-width: 110px; text-align: right; }
+
+  .legend { display: flex; gap: 14px; margin-top: 4px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 11px; color: var(--text3); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin-top: 4px; }
+  .cat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .cat-name { font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 7px; }
+  .cat-bar { height: 12px; border-radius: 3px; overflow: hidden; display: flex; background: var(--bg); margin-bottom: 5px; }
+  .cat-nums { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+
+  .note { margin-top: 10px; padding: 8px 12px; background: var(--bg3); border-left: 2px solid var(--border2); border-radius: 0 6px 6px 0; font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .note strong { color: var(--text); font-weight: 500; }
+
+  .allin-box { background: rgba(185,28,28,0.1); border: 1px solid rgba(185,28,28,0.3); border-radius: var(--radius); padding: 20px; text-align: center; margin-bottom: 10px; }
+  .allin-title { font-size: 28px; font-weight: 600; color: #ef4444; margin-bottom: 6px; }
+  .allin-sub { font-size: 13px; color: var(--text2); }
+
+  .exploit-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; background: var(--bg2); border-left: 3px solid var(--amber); }
+  .exploit-trigger { font-size: 13px; font-weight: 500; color: var(--amber); margin-bottom: 6px; display: flex; align-items: flex-start; gap: 6px; }
+  .exploit-trigger::before { content: "⚡"; font-size: 12px; margin-top: 1px; flex-shrink: 0; }
+  .exploit-action { font-size: 13px; color: var(--text2); padding-left: 18px; line-height: 1.5; }
+
+  .rule { display: flex; gap: 12px; padding: 12px 14px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; align-items: flex-start; border: 1px solid transparent; }
+  .rule-pot  { background: var(--green-dim); border-color: rgba(62,207,142,0.2); }
+  .rule-call { background: var(--blue-dim);  border-color: rgba(74,158,255,0.2); }
+  .rule-fold { background: var(--red-dim);   border-color: rgba(239,68,68,0.15); }
+  .rule-note { background: var(--amber-dim); border-color: rgba(245,158,11,0.2); }
+  .rule-icon { font-size: 14px; min-width: 20px; margin-top: 1px; flex-shrink: 0; }
+  .rule-pot  .rule-icon { color: var(--green); }
+  .rule-call .rule-icon { color: var(--blue); }
+  .rule-fold .rule-icon { color: var(--red); }
+  .rule-note .rule-icon { color: var(--amber); }
+
+  .insight { background: var(--bg2); border: 1px solid rgba(74,158,255,0.25); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 24px; font-size: 13px; color: var(--text2); }
+  .insight-title { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 6px; }
+  .insight strong { color: var(--text); font-weight: 500; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* PLAYER TYPES */
+  .player-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .player-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+  .player-card:hover { border-color: var(--border2); }
+  .player-card.active { border-color: var(--blue); }
+  .player-header { padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px; }
+  .player-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .player-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .player-tag { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 1px; }
+  .player-tells { padding: 0 16px 14px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .tell { font-size: 11px; padding: 3px 8px; border-radius: 4px; background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+
+  .player-detail { display: none; }
+  .player-detail.active { display: block; }
+
+  .detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .detail-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .detail-name { font-size: 20px; font-weight: 600; color: var(--text); }
+  .detail-desc { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+  .spots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .spot-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .spot-title { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 10px; }
+  .spot-rule { font-size: 13px; color: var(--text2); margin-bottom: 6px; padding-left: 10px; border-left: 2px solid var(--border2); line-height: 1.5; }
+  .spot-rule strong { color: var(--text); font-weight: 500; }
+  .spot-rule.green { border-left-color: var(--green); }
+  .spot-rule.blue  { border-left-color: var(--blue); }
+  .spot-rule.red   { border-left-color: var(--red); }
+  .spot-rule.amber { border-left-color: var(--amber); }
+
+  .key-rules { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+  .key-rules-title { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 10px; }
+  .key-rule-item { display: flex; gap: 8px; font-size: 13px; color: var(--text2); margin-bottom: 7px; align-items: flex-start; line-height: 1.5; }
+  .key-rule-item:last-child { margin-bottom: 0; }
+  .key-rule-item strong { color: var(--text); font-weight: 500; }
+  .kri { flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    .header { padding: 20px; }
+    .nav { padding: 12px 20px; }
+    .content { padding: 20px; }
+    .two-col, .spots-grid { grid-template-columns: 1fr; }
+    .cat-grid { grid-template-columns: 1fr 1fr; }
+    .player-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="module-label">PLO Mastermind · 5-Card</div>
+    <div class="module-title">Module 1 — <span>BvB Preflop</span></div>
+  </div>
+  <div class="header-meta">100bb · Low Stakes<br>5% rake · 3bb cap · Cash</div>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" onclick="show('gto')">GTO Baseline</div>
+  <div class="nav-tab" onclick="show('exploit')">Population Exploits</div>
+  <div class="nav-tab" onclick="show('decision')">Decision Rules</div>
+  <div class="nav-tab" onclick="show('players')">vs Player Types</div>
+</div>
+
+<!-- ══════════ GTO ══════════ -->
+<div id="tab-gto" class="content active">
+
+  <!-- SCENARIO 1 -->
+  <div class="section">
+    <div class="section-title">Scenario 1 — SB open decision</div>
+    <div class="card">
+      <div class="card-title">SB vs BB (pot 1.5bb)</div>
+      <div class="freq-row">
+        <div class="freq-label">Overall</div>
+        <div class="freq-bar"><div class="seg-fold" style="width:64%"></div><div class="seg-call" style="width:4%"></div><div class="seg-pot" style="width:32%"></div></div>
+        <div class="freq-nums">Fold 64 / Call 4 / Pot 32</div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3b7dd8"></div>Fold 64%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2a9d6e"></div>Call 4%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c2561a"></div>Pot 32%</div>
+      </div>
+      <div class="cat-grid" style="margin-top:12px">
+        <div class="cat-card"><div class="cat-name">Unpaired DS (24%)</div><div class="cat-bar"><div class="seg-fold" style="width:55%"></div><div class="seg-call" style="width:5%"></div><div class="seg-pot" style="width:40%"></div></div><div class="cat-nums">55 / 5 / 40</div></div>
+        <div class="cat-card"><div class="cat-name">Unpaired SS (27%)</div><div class="cat-bar"><div class="seg-fold" style="width:74%"></div><div class="seg-call" style="width:3%"></div><div class="seg-pot" style="width:23%"></div></div><div class="cat-nums">74 / 3 / 23</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair DS (21%)</div><div class="cat-bar"><div class="seg-fold" style="width:56%"></div><div class="seg-call" style="width:5%"></div><div class="seg-pot" style="width:39%"></div></div><div class="cat-nums">56 / 5 / 39</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair SS (24%)</div><div class="cat-bar"><div class="seg-fold" style="width:71%"></div><div class="seg-call" style="width:2%"></div><div class="seg-pot" style="width:27%"></div></div><div class="cat-nums">71 / 2 / 27</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair DS (2.5%)</div><div class="cat-bar"><div class="seg-fold" style="width:45%"></div><div class="seg-pot" style="width:55%"></div></div><div class="cat-nums">45 / 0 / 55</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair SS (2.5%)</div><div class="cat-bar"><div class="seg-fold" style="width:56%"></div><div class="seg-call" style="width:2%"></div><div class="seg-pot" style="width:42%"></div></div><div class="cat-nums">56 / 2 / 42</div></div>
+      </div>
+      <div class="note"><strong>Key:</strong> Binary — ή pot ή fold. Limp = 4%, ανύπαρκτο. Two Pair DS ποτάρει 55% — η πιο aggressive κατηγορία OOP.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 2 -->
+  <div class="section">
+    <div class="section-title">Scenario 2 — BB action vs SB limp (pot 2bb)</div>
+    <div class="card">
+      <div class="card-title">BB IP vs SB call</div>
+      <div class="freq-row">
+        <div class="freq-label">Overall</div>
+        <div class="freq-bar"><div class="seg-call" style="width:57%"></div><div class="seg-pot" style="width:43%"></div></div>
+        <div class="freq-nums">Check 57 / Pot 43</div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#2a9d6e"></div>Check 57%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c2561a"></div>Pot 43%</div>
+      </div>
+      <div class="note">Σπάνιο scenario (SB limp = 4%). BB ποτάρει 43% IP — χρησιμοποιεί θέση επιθετικά.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 3 -->
+  <div class="section">
+    <div class="section-title">Scenario 3 — BB response to SB pot (pot 3bb)</div>
+    <div class="card">
+      <div class="card-title">BB vs SB pot</div>
+      <div class="freq-row">
+        <div class="freq-label">Overall</div>
+        <div class="freq-bar"><div class="seg-fold" style="width:38%"></div><div class="seg-call" style="width:51%"></div><div class="seg-pot" style="width:12%"></div></div>
+        <div class="freq-nums">Fold 38 / Call 51 / 3bet 12</div>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3b7dd8"></div>Fold 38%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2a9d6e"></div>Call 51%</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c2561a"></div>3bet 12%</div>
+      </div>
+      <div class="cat-grid" style="margin-top:12px">
+        <div class="cat-card"><div class="cat-name">Unpaired DS</div><div class="cat-bar"><div class="seg-fold" style="width:24%"></div><div class="seg-call" style="width:57%"></div><div class="seg-pot" style="width:19%"></div></div><div class="cat-nums">24 / 57 / 19</div></div>
+        <div class="cat-card"><div class="cat-name">Unpaired SS</div><div class="cat-bar"><div class="seg-fold" style="width:48%"></div><div class="seg-call" style="width:50%"></div><div class="seg-pot" style="width:2%"></div></div><div class="cat-nums">48 / 50 / 2</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair DS</div><div class="cat-bar"><div class="seg-fold" style="width:30%"></div><div class="seg-call" style="width:54%"></div><div class="seg-pot" style="width:16%"></div></div><div class="cat-nums">30 / 54 / 16</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair SS</div><div class="cat-bar"><div class="seg-fold" style="width:49%"></div><div class="seg-call" style="width:41%"></div><div class="seg-pot" style="width:10%"></div></div><div class="cat-nums">49 / 41 / 10</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair DS</div><div class="cat-bar"><div class="seg-fold" style="width:19%"></div><div class="seg-call" style="width:58%"></div><div class="seg-pot" style="width:23%"></div></div><div class="cat-nums">19 / 58 / 23</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair SS</div><div class="cat-bar"><div class="seg-fold" style="width:32%"></div><div class="seg-call" style="width:47%"></div><div class="seg-pot" style="width:20%"></div></div><div class="cat-nums">32 / 47 / 20</div></div>
+      </div>
+      <div class="note">BB 3bet tight (12%) — SB range είναι wide, δεν υπάρχει λόγος squeeze. Κυρίαρχη action: call.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 4 -->
+  <div class="section">
+    <div class="section-title">Scenario 4 — SB response to BB 3bet (pot 12bb)</div>
+    <div class="card">
+      <div class="card-title">SB vs BB 3bet</div>
+      <div class="freq-row">
+        <div class="freq-label">Overall</div>
+        <div class="freq-bar"><div class="seg-fold" style="width:37%"></div><div class="seg-call" style="width:48%"></div><div class="seg-pot" style="width:14%"></div></div>
+        <div class="freq-nums">Fold 37 / Call 48 / 4bet 14</div>
+      </div>
+      <div class="cat-grid" style="margin-top:12px">
+        <div class="cat-card"><div class="cat-name">Unpaired DS</div><div class="cat-bar"><div class="seg-fold" style="width:22%"></div><div class="seg-call" style="width:68%"></div><div class="seg-pot" style="width:11%"></div></div><div class="cat-nums">22 / 68 / 11</div></div>
+        <div class="cat-card"><div class="cat-name">Unpaired SS ⚠️</div><div class="cat-bar"><div class="seg-fold" style="width:60%"></div><div class="seg-call" style="width:39%"></div><div class="seg-pot" style="width:1%"></div></div><div class="cat-nums">60 / 39 / 1</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair DS</div><div class="cat-bar"><div class="seg-fold" style="width:22%"></div><div class="seg-call" style="width:72%"></div><div class="seg-pot" style="width:6%"></div></div><div class="cat-nums">22 / 72 / 6</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair SS</div><div class="cat-bar"><div class="seg-fold" style="width:41%"></div><div class="seg-call" style="width:55%"></div><div class="seg-pot" style="width:4%"></div></div><div class="cat-nums">41 / 55 / 4</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair DS</div><div class="cat-bar"><div class="seg-fold" style="width:54%"></div><div class="seg-call" style="width:43%"></div><div class="seg-pot" style="width:3%"></div></div><div class="cat-nums">54 / 43 / 3</div></div>
+        <div class="cat-card" style="border-color:rgba(245,158,11,0.3)"><div class="cat-name" style="color:var(--amber)">Two Pair SS ★</div><div class="cat-bar"><div class="seg-fold" style="width:6%"></div><div class="seg-call" style="width:36%"></div><div class="seg-pot" style="width:57%"></div></div><div class="cat-nums" style="color:var(--amber)">6 / 36 / 57 (!)</div></div>
+      </div>
+      <div class="note"><strong>Surprise:</strong> Two Pair SS 4betάρει 57% — μην το πετάς. Unpaired SS folds 60% — η πιο ακριβή κατηγορία να έχεις ποτάρει.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 5 -->
+  <div class="section">
+    <div class="section-title">Scenario 5 — SB response to BB 4bet (pot 12bb)</div>
+    <div class="card">
+      <div class="card-title">SB vs BB 4bet — SB called, BB pots again</div>
+      <div class="freq-row">
+        <div class="freq-label">Overall</div>
+        <div class="freq-bar"><div class="seg-fold" style="width:37%"></div><div class="seg-call" style="width:48%"></div><div class="seg-pot" style="width:14%"></div></div>
+        <div class="freq-nums">Fold 37 / Call 48 / 5bet 14</div>
+      </div>
+      <div class="cat-grid" style="margin-top:12px">
+        <div class="cat-card"><div class="cat-name">Unpaired DS</div><div class="cat-bar"><div class="seg-fold" style="width:23%"></div><div class="seg-call" style="width:65%"></div><div class="seg-pot" style="width:12%"></div></div><div class="cat-nums">23 / 65 / 12</div></div>
+        <div class="cat-card"><div class="cat-name">Unpaired SS</div><div class="cat-bar"><div class="seg-fold" style="width:68%"></div><div class="seg-call" style="width:32%"></div></div><div class="cat-nums">68 / 32 / 0</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair DS</div><div class="cat-bar"><div class="seg-fold" style="width:24%"></div><div class="seg-call" style="width:56%"></div><div class="seg-pot" style="width:20%"></div></div><div class="cat-nums">24 / 56 / 20</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair SS</div><div class="cat-bar"><div class="seg-fold" style="width:51%"></div><div class="seg-call" style="width:29%"></div><div class="seg-pot" style="width:19%"></div></div><div class="cat-nums">51 / 29 / 19</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair DS</div><div class="cat-bar"><div class="seg-fold" style="width:10%"></div><div class="seg-call" style="width:61%"></div><div class="seg-pot" style="width:29%"></div></div><div class="cat-nums">10 / 61 / 29</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair SS</div><div class="cat-bar"><div class="seg-fold" style="width:27%"></div><div class="seg-call" style="width:43%"></div><div class="seg-pot" style="width:30%"></div></div><div class="cat-nums">27 / 43 / 30</div></div>
+      </div>
+      <div class="note">Unpaired SS folds 68% — ακόμα πιο ακριβό spot. Two Pair DS call 61% — χρησιμοποιεί pot equity.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 6 -->
+  <div class="section">
+    <div class="section-title">Scenario 6 — BB response to SB 5bet (pot 36bb)</div>
+    <div class="card">
+      <div class="card-title">BB vs SB 5bet</div>
+      <div class="freq-row">
+        <div class="freq-label">Overall</div>
+        <div class="freq-bar"><div class="seg-fold" style="width:20%"></div><div class="seg-call" style="width:56%"></div><div class="seg-pot" style="width:24%"></div></div>
+        <div class="freq-nums">Fold 20 / Call 56 / 6bet 24</div>
+      </div>
+      <div class="cat-grid" style="margin-top:12px">
+        <div class="cat-card"><div class="cat-name">Unpaired DS ★</div><div class="cat-bar"><div class="seg-call" style="width:96%"></div><div class="seg-pot" style="width:4%"></div></div><div class="cat-nums" style="color:var(--green)">0 / 96 / 4 (!)</div></div>
+        <div class="cat-card"><div class="cat-name">Unpaired SS</div><div class="cat-bar"><div class="seg-fold" style="width:42%"></div><div class="seg-call" style="width:58%"></div></div><div class="cat-nums">42 / 58 / 0</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair DS</div><div class="cat-bar"><div class="seg-fold" style="width:31%"></div><div class="seg-call" style="width:28%"></div><div class="seg-pot" style="width:41%"></div></div><div class="cat-nums">31 / 28 / 41</div></div>
+        <div class="cat-card"><div class="cat-name">One Pair SS</div><div class="cat-bar"><div class="seg-fold" style="width:38%"></div><div class="seg-call" style="width:22%"></div><div class="seg-pot" style="width:40%"></div></div><div class="cat-nums">38 / 22 / 40</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair DS ★</div><div class="cat-bar"><div class="seg-fold" style="width:41%"></div><div class="seg-pot" style="width:57%"></div></div><div class="cat-nums" style="color:var(--amber)">41 / 0 / 57 (!)</div></div>
+        <div class="cat-card"><div class="cat-name">Two Pair SS</div><div class="cat-bar"><div class="seg-fold" style="width:8%"></div><div class="seg-call" style="width:54%"></div><div class="seg-pot" style="width:38%"></div></div><div class="cat-nums">8 / 54 / 38</div></div>
+      </div>
+      <div class="note"><strong>Key:</strong> Unpaired DS calls 96% — σχεδόν ποτέ δεν folds. Two Pair DS 6bets 57% — αντι-intuitive αλλά correct.</div>
+    </div>
+  </div>
+
+  <!-- SCENARIO 7 -->
+  <div class="section">
+    <div class="section-title">Scenario 7 — SB vs BB 5bet (pot 108bb) — All-in</div>
+    <div class="allin-box">
+      <div class="allin-title">ALL-IN 100%</div>
+      <div class="allin-sub">Pot 108bb — δεν υπάρχει decision. Αν φτάσεις εδώ, είσαι all-in.</div>
+      <div class="allin-sub" style="margin-top:8px;font-size:12px;color:var(--text3)">Εξαίρεση: AAAA66 folds 61% — set over set edge case. Ένα combo σε όλο το σύμπαν.</div>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-card"><div class="cat-name">Unpaired DS (25%)</div><div class="cat-bar"><div class="seg-allin" style="width:100%"></div></div><div class="cat-nums">All-in 100%</div></div>
+      <div class="cat-card"><div class="cat-name">Unpaired SS (0%)</div><div class="cat-bar"><div class="seg-allin" style="width:100%"></div></div><div class="cat-nums">All-in 100%</div></div>
+      <div class="cat-card"><div class="cat-name">One Pair DS (34%)</div><div class="cat-bar"><div class="seg-allin" style="width:100%"></div></div><div class="cat-nums">All-in 100%</div></div>
+      <div class="cat-card"><div class="cat-name">One Pair SS (27%)</div><div class="cat-bar"><div class="seg-allin" style="width:100%"></div></div><div class="cat-nums">All-in 100%</div></div>
+      <div class="cat-card"><div class="cat-name">Two Pair DS (8%)</div><div class="cat-bar"><div class="seg-allin" style="width:100%"></div></div><div class="cat-nums">All-in 100%</div></div>
+      <div class="cat-card"><div class="cat-name">Two Pair SS (7%)</div><div class="cat-bar"><div class="seg-allin" style="width:100%"></div></div><div class="cat-nums">All-in 100%</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ EXPLOIT ══════════ -->
+<div id="tab-exploit" class="content">
+  <div class="insight">
+    <div class="insight-title">Βάση για τα exploits</div>
+    GTO baseline: SB pots 32%, BB 3bets 12%, SB 4bets 14%. Κάθε απόκλιση δημιουργεί exploit opportunity.
+  </div>
+
+  <div class="section">
+    <div class="section-title">vs SB που pot too wide (&gt;40%)</div>
+    <div class="exploit-card"><div class="exploit-trigger">SB ποτάρει 40%+</div><div class="exploit-action">→ BB 3betάρει πιο συχνά με medium DS hands. AQJT DS, KQJ9 DS — GTO calls, εδώ γίνονται 3bets. SB range είναι bluff-heavy.</div></div>
+    <div class="exploit-card"><div class="exploit-trigger">SB ποτάρει με low rundowns SS (7654, 6543)</div><div class="exploit-action">→ BB call ακόμα πιο φαρδιά. Τα low rundowns χάνουν value IP — εκμεταλλεύεσαι postflop position.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">vs BB που δεν 3betάρει αρκετά (&lt;8%)</div>
+    <div class="exploit-card"><div class="exploit-trigger">BB call% &gt;60%, 3bet% &lt;8%</div><div class="exploit-action">→ SB ποτάρει ακόμα πιο wide. BB range postflop είναι capped — δεν έχει nut hands. Πιέζεις κάθε board.</div></div>
+    <div class="exploit-card"><div class="exploit-trigger">BB 3betάρει random (χωρίς hand selection)</div><div class="exploit-action">→ SB fold range ανεβαίνει, 4bet range tight (AAxx DS μόνο). Μη δίνεις action με marginal hands vs aggro BB.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">vs SB που fold πολύ vs 3bet (&gt;40%)</div>
+    <div class="exploit-card"><div class="exploit-trigger">SB fold vs 3bet &gt;40%</div><div class="exploit-action">→ BB 3betάρει ακόμα και medium SS hands. KQJT SS, QJT9 DS γίνονται 3bets. Steal freely.</div></div>
+    <div class="exploit-card"><div class="exploit-trigger">SB 4betάρει πολύ (&gt;18%) vs 3bet</div><div class="exploit-action">→ BB 3bet range στενεύει. Prefer call με medium DS, φύλα το 3bet για πολύ premium.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Low stakes population tendencies</div>
+    <div class="exploit-card"><div class="exploit-trigger">Typical low stakes SB: pots 25-28% (under GTO 32%)</div><div class="exploit-action">→ BB tightens slightly vs pot, αλλά ανοίγει vs limps. Οι περισσότεροι SB under-pot με medium hands.</div></div>
+    <div class="exploit-card"><div class="exploit-trigger">Typical low stakes BB: over-calls, under-3bets</div><div class="exploit-action">→ SB ποτάρει wide χωρίς ρίσκο squeeze. Βγες με medium rundowns και DS hands που normally fold.</div></div>
+    <div class="exploit-card"><div class="exploit-trigger">Low stakes: σπάνιο 4bet/5bet war</div><div class="exploit-action">→ Αν κάποιος 4betάρει, treat as near-nuts. Fold all non-premium. Bluff 4bets σχεδόν ανύπαρκτα.</div></div>
+  </div>
+</div>
+
+<!-- ══════════ DECISION ══════════ -->
+<div id="tab-decision" class="content">
+  <div class="section">
+    <div class="section-title">SB: Pot ή Fold;</div>
+    <div class="rule rule-pot"><div class="rule-icon">▲</div><div><strong>Pot:</strong> AAxx (πάντα), DS rundowns JT98+, Two pair DS, A-high DS rundowns (AKQ9, AKJT), High broadway DS</div></div>
+    <div class="rule rule-call"><div class="rule-icon">→</div><div><strong>Borderline pot:</strong> Medium DS rundowns (QJT9, KQJ9), One pair DS με connectivity, Two pair SS με A-high</div></div>
+    <div class="rule rule-fold"><div class="rule-icon">▼</div><div><strong>Fold:</strong> Rainbow, Low rundowns SS, Disconnected SS, Dangling hands (AKQQ no suit), Off-suit pairs χωρίς connectivity</div></div>
+    <div class="rule rule-note"><div class="rule-icon">!</div><div>Limp = 4% στο solver. Στην πράξη: <strong>pot ή fold</strong>.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">BB: Call, 3bet ή Fold vs SB pot;</div>
+    <div class="rule rule-pot"><div class="rule-icon">▲</div><div><strong>3bet:</strong> AAxx DS, AAKK DS, Premium DS rundowns (AKQJ, KQJT), High two pair DS με nut flush</div></div>
+    <div class="rule rule-call"><div class="rule-icon">→</div><div><strong>Call:</strong> Medium DS rundowns, One pair DS με nut flush draw, High SS rundowns, Connected two pair SS</div></div>
+    <div class="rule rule-fold"><div class="rule-icon">▼</div><div><strong>Fold:</strong> Rainbow disconnected, Low SS rundowns, Off-suit pairs χωρίς connectivity, &lt;3 broadway rainbow</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">SB: Response to BB 3bet (pot 12bb)</div>
+    <div class="rule rule-pot"><div class="rule-icon">▲</div><div><strong>4bet:</strong> AAxx DS, AAKK DS, AAQQ DS — ~14% combos. Αμφιβολία = call.</div></div>
+    <div class="rule rule-call"><div class="rule-icon">→</div><div><strong>Call:</strong> DS premium/medium, One pair DS με connectivity, Two pair SS (4bet 57% — μην το πετάς)</div></div>
+    <div class="rule rule-fold"><div class="rule-icon">▼</div><div><strong>Fold:</strong> Unpaired SS — fold 60%! KKJ9 SS, AQTT SS → fold.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">SB: Response to BB 4bet (pot 12bb)</div>
+    <div class="rule rule-pot"><div class="rule-icon">▲</div><div><strong>5bet:</strong> Two Pair SS (30%), One Pair DS (20%), One Pair SS (19%) — premium hands μόνο.</div></div>
+    <div class="rule rule-call"><div class="rule-icon">→</div><div><strong>Call:</strong> Unpaired DS (65%), Two Pair DS (61%) — DS hands call wide ακόμα και εδώ.</div></div>
+    <div class="rule rule-fold"><div class="rule-icon">▼</div><div><strong>Fold:</strong> Unpaired SS folds 68% — το πιο ακριβό spot να έχεις ποτάρει.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">BB: Response to SB 5bet (pot 36bb)</div>
+    <div class="rule rule-pot"><div class="rule-icon">▲</div><div><strong>6bet:</strong> Two Pair DS (57%), One Pair DS/SS (~40%) — strong equity hands push.</div></div>
+    <div class="rule rule-call"><div class="rule-icon">→</div><div><strong>Call:</strong> Unpaired DS calls 96% — σχεδόν ποτέ δεν folds. Unpaired SS calls 58%.</div></div>
+    <div class="rule rule-fold"><div class="rule-icon">▼</div><div><strong>Fold:</strong> Unpaired SS folds 42% — μόνο κατηγορία με significant fold rate εδώ.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">SB vs BB 5bet (pot 108bb)</div>
+    <div class="rule rule-fold" style="background:rgba(185,28,28,0.1);border-color:rgba(185,28,28,0.3)">
+      <div class="rule-icon" style="color:#ef4444">★</div>
+      <div><strong>ALL-IN.</strong> Δεν υπάρχει decision. Αν φτάσεις εδώ με οποιαδήποτε hand εκτός AAAA66 — all-in.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Quick-reference heuristics</div>
+    <div class="two-col">
+      <div>
+        <div class="rule rule-pot" style="margin-bottom:6px"><div class="rule-icon">✓</div><div><strong>DS bonus</strong> = ~1 tier up. KQJT SS που normally folds → call/pot αν DS.</div></div>
+        <div class="rule rule-pot"><div class="rule-icon">✓</div><div><strong>BvB = wide ranges.</strong> Λιγότερα folds vs ό,τι vs BTN/CO.</div></div>
+      </div>
+      <div>
+        <div class="rule rule-fold" style="margin-bottom:6px"><div class="rule-icon">✗</div><div>Μην limps ως SB. Μην 3betάρεις ως BB για "balance" — 12% είναι ήδη tight.</div></div>
+        <div class="rule rule-fold"><div class="rule-icon">✗</div><div><strong>Unpaired SS</strong> = το πιο ακριβό segment σε κάθε spot. Folds 60-68% vs 3bet/4bet.</div></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:14px 16px;background:var(--bg2);border:1px solid rgba(245,158,11,0.25);border-radius:10px;">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--amber);margin-bottom:8px">Anti-intuitive spots</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8">
+        <div>• <strong style="color:var(--text)">Two Pair SS 4bets 57% vs 3bet</strong> — δεν το πετάς, το ποτάρεις.</div>
+        <div>• <strong style="color:var(--text)">Unpaired DS calls 96% vs 5bet</strong> — σχεδόν ποτέ δεν folds σε 36bb pot.</div>
+        <div>• <strong style="color:var(--text)">Two Pair DS 6bets 57% vs 5bet</strong> — aggressive σε μεγάλο pot.</div>
+        <div>• <strong style="color:var(--text)">SB limp = 4%</strong> — αν κάποιος limps συχνά → exploit hard.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PLAYER TYPES ══════════ -->
+<div id="tab-players" class="content">
+  <div class="player-grid">
+    <div class="player-card" id="pc-nit" onclick="selectPlayer('nit')">
+      <div class="player-header"><div class="player-icon" style="background:rgba(74,158,255,0.12)">🧊</div><div><div class="player-name">Nit</div><div class="player-tag">fold-heavy · predictable</div></div></div>
+      <div class="player-tells"><span class="tell">Pots &lt;20%</span><span class="tell">Rarely 3bets</span><span class="tell">3bet = nuts</span><span class="tell">Folds vs pressure</span></div>
+    </div>
+    <div class="player-card" id="pc-weakreg" onclick="selectPlayer('weakreg')">
+      <div class="player-header"><div class="player-icon" style="background:rgba(167,139,250,0.12)">📖</div><div><div class="player-name">Weak Reg</div><div class="player-tag">theory leaks · passive</div></div></div>
+      <div class="player-tells"><span class="tell">Over-calls</span><span class="tell">Under-3bets</span><span class="tell">Folds vs 4bet</span><span class="tell">Timing tells</span></div>
+    </div>
+    <div class="player-card" id="pc-aggroreg" onclick="selectPlayer('aggroreg')">
+      <div class="player-header"><div class="player-icon" style="background:rgba(239,68,68,0.12)">🔥</div><div><div class="player-name">Aggro Reg</div><div class="player-tag">wide 3bet · pressure</div></div></div>
+      <div class="player-tells"><span class="tell">3bet 20%+</span><span class="tell">4bets wide</span><span class="tell">Exploits limps</span><span class="tell">Range aware</span></div>
+    </div>
+    <div class="player-card" id="pc-station" onclick="selectPlayer('station')">
+      <div class="player-header"><div class="player-icon" style="background:rgba(62,207,142,0.12)">🚂</div><div><div class="player-name">Calling Station</div><div class="player-tag">never folds · 0 aggression</div></div></div>
+      <div class="player-tells"><span class="tell">Calls everything</span><span class="tell">3bet = AA+ only</span><span class="tell">No bluffs</span><span class="tell">Passive postflop</span></div>
+    </div>
+    <div class="player-card" id="pc-fish" onclick="selectPlayer('fish')">
+      <div class="player-header"><div class="player-icon" style="background:rgba(245,158,11,0.12)">🎣</div><div><div class="player-name">Passive Fish</div><div class="player-tag">random · limps · no pressure</div></div></div>
+      <div class="player-tells"><span class="tell">Limps often</span><span class="tell">3bet = premium only</span><span class="tell">Random hands</span><span class="tell">No fold equity</span></div>
+    </div>
+  </div>
+
+  <div id="pd-nit" class="player-detail">
+    <div class="detail-header"><div class="detail-icon" style="background:rgba(74,158,255,0.12)">🧊</div><div><div class="detail-name">vs Nit</div><div class="detail-desc">Fold-heavy, predictable range, σπάνια 3bet — και αν 3betάρει, έχει nuts.</div></div></div>
+    <div class="spots-grid">
+      <div class="spot-card"><div class="spot-title">Εσύ SB vs Nit BB</div><div class="spot-rule green"><strong>Pot wider.</strong> Nit δεν 3betάρει — μπορείς να βγεις με medium DS rundowns και SS hands που GTO folds.</div><div class="spot-rule blue"><strong>Limp occasionally.</strong> Nit δεν ποτάρει IP — limp-call χωρίς ρίσκο.</div><div class="spot-rule amber"><strong>Αν 3betάρει:</strong> fold εκτός AAxx DS. Treat as nuts.</div></div>
+      <div class="spot-card"><div class="spot-title">Εσύ BB vs Nit SB</div><div class="spot-rule green"><strong>3bet wider.</strong> Nit pots &lt;20% — range narrow. Medium DS hands γίνονται 3bets.</div><div class="spot-rule blue"><strong>Call ευρύτερα</strong> — Nit δεν πιέζει postflop.</div><div class="spot-rule red"><strong>Vs Nit 4bet:</strong> fold everything εκτός AAxx DS. Δεν bluffάρει.</div></div>
+    </div>
+    <div class="key-rules"><div class="key-rules-title">Key rules</div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>SB: Pot με κάθε DS hand που normally borderline. Nit δεν punishes.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>BB: 3bet bluff με connected DS hands — Nit folds πολύ vs 3bet.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--red)">✗</span><div>Μην bluff-4betάρεις vs Nit 3bet. Δεν bluffάρει — έχει the goods.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--amber)">!</span><div>Postflop: value bet thin — Nit δεν fold καλά hands αλλά δεν bluff-catches.</div></div></div>
+  </div>
+
+  <div id="pd-weakreg" class="player-detail">
+    <div class="detail-header"><div class="detail-icon" style="background:rgba(167,139,250,0.12)">📖</div><div><div class="detail-name">vs Weak Reg</div><div class="detail-desc">Ξέρει βασική theory αλλά over-calls, under-3bets, και folds vs sustained pressure.</div></div></div>
+    <div class="spots-grid">
+      <div class="spot-card"><div class="spot-title">Εσύ SB vs Weak Reg BB</div><div class="spot-rule green"><strong>Pot GTO range.</strong> Weak Reg δεν 3betάρει αρκετά — δεν τιμωρείς wide range σου.</div><div class="spot-rule blue"><strong>4bet tight.</strong> Αν 3betάρει, έχει αξία — δεν bluff-3betάρει.</div><div class="spot-rule amber"><strong>Postflop value</strong> — Weak Reg over-calls ακόμα και με dominated hands.</div></div>
+      <div class="spot-card"><div class="spot-title">Εσύ BB vs Weak Reg SB</div><div class="spot-rule green"><strong>3bet ελαφρά wider</strong> — Weak Reg folds vs 3bet πάνω από GTO frequency.</div><div class="spot-rule blue"><strong>Call φαρδιά</strong> — Weak Reg δεν εκμεταλλεύεται position postflop.</div><div class="spot-rule red"><strong>Vs 4bet:</strong> fold medium hands. Weak Reg 4bet range = strong.</div></div>
+    </div>
+    <div class="key-rules"><div class="key-rules-title">Key rules</div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>3bet πιο συχνά ως BB — Weak Reg folds vs pressure πάνω από GTO.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>SB: pot wide, δεν έχεις squeeze risk. Weak Reg under-3bets significantly.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--amber)">!</span><div>Timing tells: Weak Reg συχνά instant-calls με strong hands, pauses με medium.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--red)">✗</span><div>Μην over-bluffάρεις — Weak Reg over-calls. Value betting είναι το κύριο exploit.</div></div></div>
+  </div>
+
+  <div id="pd-aggroreg" class="player-detail">
+    <div class="detail-header"><div class="detail-icon" style="background:rgba(239,68,68,0.12)">🔥</div><div><div class="detail-name">vs Aggro Reg</div><div class="detail-desc">3bet/4bet wide, range aware, βάζει maximum pressure. Ο πιο δύσκολος τύπος BvB.</div></div></div>
+    <div class="spots-grid">
+      <div class="spot-card"><div class="spot-title">Εσύ SB vs Aggro Reg BB</div><div class="spot-rule red"><strong>Tight pot range.</strong> Aggro Reg 3betάρει wide — pot μόνο hands που αντέχουν 3bet.</div><div class="spot-rule blue"><strong>4bet wider.</strong> Aggro Reg 3bet range έχει bluffs — AAKK DS, premium DS rundowns γίνονται 4bets.</div><div class="spot-rule amber"><strong>Vs 5bet:</strong> fold εκτός AAxx DS. Ακόμα και Aggro Reg δεν 5bet bluffs πολύ.</div></div>
+      <div class="spot-card"><div class="spot-title">Εσύ BB vs Aggro Reg SB</div><div class="spot-rule green"><strong>Call wider vs pot</strong> — SB range έχει bluffs. DS hands με connectivity αξίζουν call.</div><div class="spot-rule blue"><strong>3bet για value, όχι bluff.</strong> Aggro Reg δεν folds vs 3bet — 4betάρει back.</div><div class="spot-rule red"><strong>Μην over-3bet.</strong> Aggro Reg θα 4betάρει και θα βρεθείς σε awkward spot με medium hands.</div></div>
+    </div>
+    <div class="key-rules"><div class="key-rules-title">Key rules</div><div class="key-rule-item"><span class="kri" style="color:var(--red)">✗</span><div>SB: Μην ποτάρεις marginal hands. Aggro Reg τιμωρεί wide ranges.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>SB: 4bet ελαφρά wider — το 3bet range έχει bluffs, μπορείς να push back.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--blue)">→</span><div>BB: Call > 3bet vs Aggro Reg SB. Avoid bloating pot OOP με medium hands.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--amber)">!</span><div>Αυτός ο τύπος παίζει postflop well — preflop equity matters περισσότερο εδώ.</div></div></div>
+  </div>
+
+  <div id="pd-station" class="player-detail">
+    <div class="detail-header"><div class="detail-icon" style="background:rgba(62,207,142,0.12)">🚂</div><div><div class="detail-name">vs Calling Station</div><div class="detail-desc">Δεν folds τίποτα preflop. 3bet = AA+ και premium rundowns μόνο. Zero bluffs.</div></div></div>
+    <div class="spots-grid">
+      <div class="spot-card"><div class="spot-title">Εσύ SB vs Station BB</div><div class="spot-rule green"><strong>Pot very wide.</strong> Station δεν 3betάρει — zero squeeze risk. Βγαίνεις με κάθε DS hand και medium SS.</div><div class="spot-rule blue"><strong>Limp ελεύθερα</strong> με speculative hands — Station δεν ποτάρει.</div><div class="spot-rule amber"><strong>Αν 3betάρει:</strong> fold εκτός AAxx DS. Μόνο AA+ και premium rundowns.</div></div>
+      <div class="spot-card"><div class="spot-title">Εσύ BB vs Station SB</div><div class="spot-rule green"><strong>Call everything.</strong> Station pots wide χωρίς να εκμεταλλεύεται position. Αξία στο να δεις flop.</div><div class="spot-rule blue"><strong>3bet για value μόνο</strong> — Station call ή fold, δεν 4betάρει bluff ποτέ.</div><div class="spot-rule red"><strong>Μην bluff-3betάρεις.</strong> Station call 90%+ vs 3bet. Bluffs έχουν 0 fold equity.</div></div>
+    </div>
+    <div class="key-rules"><div class="key-rules-title">Key rules</div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>SB: Pot the widest range εδώ. Δεν υπάρχει 3bet risk — pure value game.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>BB: Call ακόμα και speculative hands — Station δεν punishes IP.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--red)">✗</span><div>Μην bluff. Ποτέ. Station δεν folds. Το κέρδος έρχεται από value postflop.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--amber)">!</span><div>Postflop είναι το game vs Station — preflop απλώς μπες στο pot φθηνά.</div></div></div>
+  </div>
+
+  <div id="pd-fish" class="player-detail">
+    <div class="detail-header"><div class="detail-icon" style="background:rgba(245,158,11,0.12)">🎣</div><div><div class="detail-name">vs Passive Fish</div><div class="detail-desc">Random hand selection, limps πολύ, δεν πιέζει. 3bet = premium μόνο.</div></div></div>
+    <div class="spots-grid">
+      <div class="spot-card"><div class="spot-title">Εσύ SB vs Fish BB</div><div class="spot-rule green"><strong>Pot very wide.</strong> Fish δεν 3betάρει και δεν punishes. Βγαίνεις με κάθε playable hand.</div><div class="spot-rule blue"><strong>Limp trap</strong> με monster hands — Fish θα βάλει money με weak holdings.</div><div class="spot-rule amber"><strong>Αν 3betάρει:</strong> fold εκτός AAxx DS. Premium only — fish δεν bluff-3betάρει ποτέ.</div></div>
+      <div class="spot-card"><div class="spot-title">Εσύ BB vs Fish SB</div><div class="spot-rule green"><strong>Pot IP vs limp.</strong> Fish limps συχνά — ποτάρεις IP με wide range για θέση.</div><div class="spot-rule blue"><strong>Call vs pot</strong> με σχεδόν κάθε hand — Fish pot range είναι πολύ wide και weak.</div><div class="spot-rule red"><strong>Μην over-bluffάρεις.</strong> Fish δεν folds αρκετά. Value is the play.</div></div>
+    </div>
+    <div class="key-rules"><div class="key-rules-title">Key rules</div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>BB: Pot IP vs κάθε Fish limp — θέση + initiative = max value.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--green)">▲</span><div>SB: Pot wider από GTO — Fish δεν 3betάρει, δεν τιμωρεί wide range.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--red)">✗</span><div>Μην bluffάρεις Fish. Value bet all streets — Fish call-down με weak hands.</div></div><div class="key-rule-item"><span class="kri" style="color:var(--amber)">!</span><div>Ο Fish είναι postflop game — preflop απλώς μπες στο pot και παίξε τη θέση.</div></div></div>
+  </div>
+</div>
+
+<script>
+function show(name) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+function selectPlayer(name) {
+  document.querySelectorAll('.player-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.player-detail').forEach(d => d.classList.remove('active'));
+  document.getElementById('pc-' + name).classList.add('active');
+  document.getElementById('pd-' + name).classList.add('active');
+}
+selectPlayer('nit');
+</script>
+</body>
+</html>
