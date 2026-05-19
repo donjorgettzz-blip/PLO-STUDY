@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PLO — Module 1: BvB Preflop</title>
+<title>PLO — BvB Preflop &amp; Postflop</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -148,6 +148,114 @@
     .cat-grid { grid-template-columns: 1fr 1fr; }
     .player-grid { grid-template-columns: 1fr; }
   }
+
+  :root {
+    --bg: #0e0f11; --bg2: #16181c; --bg3: #1e2127;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #e8e6e0; --text2: #8a8880; --text3: #555350;
+    --blue: #4a9eff; --blue-dim: rgba(74,158,255,0.12); --blue-bg: rgba(74,158,255,0.08);
+    --green: #3ecf8e; --green-dim: rgba(62,207,142,0.12);
+    --amber: #f59e0b; --amber-dim: rgba(245,158,11,0.10);
+    --red: #ef4444; --red-dim: rgba(239,68,68,0.10);
+    --check: #2a9d6e; --bet: #c2561a;
+    --radius: 10px; --mono: 'DM Mono', monospace; --sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+  .header { padding: 32px 40px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .module-label { font-family: var(--mono); font-size: 11px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .module-title { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+  .module-title span { color: var(--blue); }
+  .header-meta { font-family: var(--mono); font-size: 11px; color: var(--text3); text-align: right; line-height: 1.8; }
+
+  .nav { display: flex; gap: 2px; padding: 16px 40px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .nav-tab { padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; color: var(--text2); transition: all 0.15s; border: 1px solid transparent; background: none; user-select: none; }
+  .nav-tab:hover { color: var(--text); background: var(--bg3); }
+  .nav-tab.active { color: var(--blue); background: var(--blue-bg); border-color: rgba(74,158,255,0.2); }
+
+  .content { display: none; padding: 32px 40px; max-width: 1000px; }
+  .content.active { display: block; }
+
+  .section { margin-bottom: 36px; }
+  .section-title { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .section-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; text-transform: none; letter-spacing: 0; font-weight: 500; }
+  .badge-unpaired { background: rgba(74,158,255,0.15); color: var(--blue); }
+  .badge-paired { background: rgba(245,158,11,0.15); color: var(--amber); }
+
+  .boards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+
+  .board-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .board-header { padding: 12px 14px 10px; display: flex; align-items: center; justify-content: space-between; }
+  .board-cards { display: flex; gap: 5px; align-items: center; }
+  .card-chip { width: 32px; height: 38px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
+  .card-red { background: #c0392b; color: #fff; }
+  .card-black { background: #2c2c2e; color: #fff; }
+  .card-blue { background: #1a6cb5; color: #fff; }
+  .card-green { background: #1a7a45; color: #fff; }
+
+  .board-meta { text-align: right; }
+  .board-texture { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .board-overall { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+  .overall-bar { width: 80px; height: 8px; border-radius: 3px; overflow: hidden; display: flex; background: var(--bg3); }
+  .overall-nums { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+
+  .board-sizing { padding: 0 14px 6px; }
+  .sizing-tag { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+  .sizing-half { background: rgba(74,158,255,0.12); color: var(--blue); }
+  .sizing-threequarter { background: rgba(249,115,22,0.12); color: #f97316; }
+
+  .cats { padding: 0 14px 14px; }
+  .cat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .cat-label { font-size: 11px; color: var(--text2); min-width: 68px; }
+  .cat-bar { flex: 1; height: 14px; border-radius: 3px; overflow: hidden; display: flex; background: var(--bg3); }
+  .seg-check { background: var(--check); }
+  .seg-bet { background: var(--bet); }
+  .cat-pct { font-family: var(--mono); font-size: 10px; color: var(--text3); min-width: 30px; text-align: right; }
+
+  .divider { height: 1px; background: var(--border); margin: 0 14px 10px; }
+
+  .note { margin: 10px 14px 0; padding: 7px 10px; background: var(--bg3); border-left: 2px solid var(--border2); border-radius: 0 6px 6px 0; font-size: 11px; color: var(--text2); line-height: 1.5; }
+  .note strong { color: var(--text); font-weight: 500; }
+
+  /* LEGEND */
+  .legend-bar { display: flex; gap: 16px; padding: 0 0 20px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* HEURISTICS TAB */
+  .heuristic-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; }
+  .heuristic-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .h-badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
+  .h-bet { background: rgba(201,85,26,0.15); color: #f97316; }
+  .h-check { background: rgba(42,157,110,0.15); color: var(--green); }
+  .rule { display: flex; gap: 10px; padding: 10px 12px; border-radius: 7px; margin-bottom: 6px; font-size: 13px; align-items: flex-start; border: 1px solid transparent; }
+  .rule-green { background: var(--green-dim); border-color: rgba(62,207,142,0.2); }
+  .rule-amber { background: var(--amber-dim); border-color: rgba(245,158,11,0.2); }
+  .rule-red { background: var(--red-dim); border-color: rgba(239,68,68,0.15); }
+  .rule-blue { background: var(--blue-dim); border-color: rgba(74,158,255,0.2); }
+  .rule-icon { min-width: 18px; flex-shrink: 0; }
+  .rule-green .rule-icon { color: var(--green); }
+  .rule-amber .rule-icon { color: var(--amber); }
+  .rule-red .rule-icon { color: var(--red); }
+  .rule-blue .rule-icon { color: var(--blue); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+
+  @media (max-width: 640px) {
+    .header { padding: 20px; }
+    .nav { padding: 12px 20px; }
+    .content { padding: 20px; }
+    .boards-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  /* POSTFLOP EXTRA */
+  .boards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
 </style>
 </head>
 <body>
@@ -155,7 +263,7 @@
 <div class="header">
   <div>
     <div class="module-label">PLO Mastermind · 5-Card</div>
-    <div class="module-title">Module 1 — <span>BvB Preflop</span></div>
+    <div class="module-title"><span>BvB Preflop &amp; Postflop</span></div>
   </div>
   <div class="header-meta">100bb · Low Stakes<br>5% rake · 3bb cap · Cash</div>
 </div>
@@ -165,6 +273,7 @@
   <div class="nav-tab" onclick="show('exploit')">Population Exploits</div>
   <div class="nav-tab" onclick="show('decision')">Decision Rules</div>
   <div class="nav-tab" onclick="show('players')">vs Player Types</div>
+  <div class="nav-tab" onclick="show('spr')">SRP SB vs BB</div>
 </div>
 
 <!-- ══════════ GTO ══════════ -->
@@ -502,11 +611,673 @@
   </div>
 </div>
 
+
+<!-- ══════════ SRP SB vs BB ══════════ -->
+<div id="tab-spr" class="content">
+
+  <div class="nav" style="padding:0 0 16px;border:none;margin-bottom:8px">
+    <div class="nav-tab active" id="spr-sub-unpaired" onclick="showSpr('pf-unpaired')">Unpaired Boards</div>
+    <div class="nav-tab" id="spr-sub-paired" onclick="showSpr('pf-paired')">Paired Boards</div>
+    <div class="nav-tab" id="spr-sub-heuristics" onclick="showSpr('pf-heuristics')">Heuristics</div>
+  </div>
+
+<!-- ══════════ UNPAIRED ══════════ -->
+<div id="tab-pf-unpaired" class="content">
+
+  <div class="legend-bar">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--check)"></div>Check</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--bet)"></div>Bet</div>
+  </div>
+
+  <!-- ACE HIGH -->
+  <div class="section">
+    <div class="section-title">Ace-high boards <span class="section-badge badge-unpaired">A high</span></div>
+    <div class="boards-grid">
+
+      <!-- AK5 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-red">A</div>
+            <div class="card-chip card-black">K</div>
+            <div class="card-chip card-green">5</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Dry top pair</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:12%"></div><div class="seg-bet" style="width:88%"></div></div>
+              <div class="overall-nums">12 / 88</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:7%"></div><div class="seg-bet" style="width:93%"></div></div><div class="cat-pct">7/93</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:11%"></div><div class="seg-bet" style="width:89%"></div></div><div class="cat-pct">11/89</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:14%"></div><div class="seg-bet" style="width:86%"></div></div><div class="cat-pct">14/86</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:8%"></div><div class="seg-bet" style="width:92%"></div></div><div class="cat-pct">8/92</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:96%"></div><div class="seg-bet" style="width:4%"></div></div><div class="cat-pct">96/4</div></div>
+        </div>
+        <div class="note"><strong>Bet almost everything.</strong> Dry A-high board, SB range hits hard. Air = only check.</div>
+      </div>
+
+      <!-- A96 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-red">A</div>
+            <div class="card-chip card-black">9</div>
+            <div class="card-chip card-green">6</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">A high mid</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:25%"></div><div class="seg-bet" style="width:75%"></div></div>
+              <div class="overall-nums">25 / 75</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:14%"></div><div class="seg-bet" style="width:86%"></div></div><div class="cat-pct">14/86</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:25%"></div><div class="seg-bet" style="width:75%"></div></div><div class="cat-pct">25/75</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:26%"></div><div class="seg-bet" style="width:74%"></div></div><div class="cat-pct">26/74</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:38%"></div><div class="seg-bet" style="width:62%"></div></div><div class="cat-pct">38/62</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Still bet-heavy</strong> αλλά Draws checkάρουν 38% — περισσότερη connectivity στο board.</div>
+      </div>
+
+      <!-- A54 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-red">A</div>
+            <div class="card-chip card-blue">5</div>
+            <div class="card-chip card-green">4</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">A high wet low</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:61%"></div><div class="seg-bet" style="width:39%"></div></div>
+              <div class="overall-nums">61 / 39</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Straight</div><div class="cat-bar"><div class="seg-check" style="width:16%"></div><div class="seg-bet" style="width:84%"></div></div><div class="cat-pct">16/84</div></div>
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:47%"></div><div class="seg-bet" style="width:53%"></div></div><div class="cat-pct">47/53</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:62%"></div><div class="seg-bet" style="width:38%"></div></div><div class="cat-pct">62/38</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:63%"></div><div class="seg-bet" style="width:37%"></div></div><div class="cat-pct">63/37</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:65%"></div><div class="seg-bet" style="width:35%"></div></div><div class="cat-pct">65/35</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Check-heavy board.</strong> Wet low board — BB range connects πολύ. Straights bet 84%, υπόλοιπα mostly check.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BROADWAY / KING HIGH -->
+  <div class="section">
+    <div class="section-title">Broadway / King-high boards <span class="section-badge badge-unpaired">K high</span></div>
+    <div class="boards-grid">
+
+      <!-- KJ6 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">K</div>
+            <div class="card-chip card-red">J</div>
+            <div class="card-chip card-green">6</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Broadway connected</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:45%"></div><div class="seg-bet" style="width:55%"></div></div>
+              <div class="overall-nums">45 / 55</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:32%"></div><div class="seg-bet" style="width:68%"></div></div><div class="cat-pct">32/68</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:45%"></div><div class="seg-bet" style="width:55%"></div></div><div class="cat-pct">45/55</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:47%"></div><div class="seg-bet" style="width:53%"></div></div><div class="cat-pct">47/53</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:44%"></div><div class="seg-bet" style="width:56%"></div></div><div class="cat-pct">44/56</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Mixed strategy.</strong> Σχεδόν 50/50 σε κάθε category — board connects και τους δύο.</div>
+      </div>
+
+      <!-- K63 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">K</div>
+            <div class="card-chip card-green">6</div>
+            <div class="card-chip card-red">3</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">K high dry</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:79%"></div><div class="seg-bet" style="width:21%"></div></div>
+              <div class="overall-nums">79 / 21</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:65%"></div><div class="seg-bet" style="width:35%"></div></div><div class="cat-pct">65/35</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:77%"></div><div class="seg-bet" style="width:23%"></div></div><div class="cat-pct">77/23</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:80%"></div><div class="seg-bet" style="width:20%"></div></div><div class="cat-pct">80/20</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:86%"></div><div class="seg-bet" style="width:14%"></div></div><div class="cat-pct">86/14</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Check-heavy.</strong> K high dry αλλά low cards — BB range connects καλύτερα με τα low cards. SB mostly checks.</div>
+      </div>
+
+      <!-- KT9 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">K</div>
+            <div class="card-chip card-blue">T</div>
+            <div class="card-chip card-green">9</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Broadway wet</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:45%"></div><div class="seg-bet" style="width:55%"></div></div>
+              <div class="overall-nums">45 / 55</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Straight</div><div class="cat-bar"><div class="seg-check" style="width:26%"></div><div class="seg-bet" style="width:74%"></div></div><div class="cat-pct">26/74</div></div>
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:49%"></div><div class="seg-bet" style="width:51%"></div></div><div class="cat-pct">49/51</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:48%"></div><div class="seg-bet" style="width:52%"></div></div><div class="cat-pct">48/52</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:50%"></div><div class="seg-bet" style="width:50%"></div></div><div class="cat-pct">50/50</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:42%"></div><div class="seg-bet" style="width:58%"></div></div><div class="cat-pct">42/58</div></div>
+        </div>
+        <div class="note"><strong>True 50/50 board.</strong> Straights bet 74%. Υπόλοιπα σχεδόν ίσα — very mixed strategy.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MID CONNECTED -->
+  <div class="section">
+    <div class="section-title">Mid connected boards <span class="section-badge badge-unpaired">mid wet</span></div>
+    <div class="boards-grid">
+
+      <!-- QT7 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">Q</div>
+            <div class="card-chip card-blue">T</div>
+            <div class="card-chip card-red">7</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Mid connected</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:46%"></div><div class="seg-bet" style="width:54%"></div></div>
+              <div class="overall-nums">46 / 54</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:35%"></div><div class="seg-bet" style="width:65%"></div></div><div class="cat-pct">35/65</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:45%"></div><div class="seg-bet" style="width:55%"></div></div><div class="cat-pct">45/55</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:48%"></div><div class="seg-bet" style="width:52%"></div></div><div class="cat-pct">48/52</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:47%"></div><div class="seg-bet" style="width:53%"></div></div><div class="cat-pct">47/53</div></div>
+        </div>
+        <div class="note"><strong>Mixed — no clear favorite.</strong> Set leads with 65% bet, υπόλοιπα balanced.</div>
+      </div>
+
+      <!-- Q76 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">Q</div>
+            <div class="card-chip card-red">7</div>
+            <div class="card-chip card-green">6</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Mid semi-wet</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:71%"></div><div class="seg-bet" style="width:29%"></div></div>
+              <div class="overall-nums">71 / 29</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:56%"></div><div class="seg-bet" style="width:44%"></div></div><div class="cat-pct">56/44</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:68%"></div><div class="seg-bet" style="width:32%"></div></div><div class="cat-pct">68/32</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:72%"></div><div class="seg-bet" style="width:28%"></div></div><div class="cat-pct">72/28</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:76%"></div><div class="seg-bet" style="width:24%"></div></div><div class="cat-pct">76/24</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Check-heavy.</strong> Low connected cards — BB range hits hard. Draws checkάρουν 76%.</div>
+      </div>
+
+      <!-- T87 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">T</div>
+            <div class="card-chip card-blue">8</div>
+            <div class="card-chip card-green">7</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Wet connected</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:67%"></div><div class="seg-bet" style="width:33%"></div></div>
+              <div class="overall-nums">67 / 33</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Straight</div><div class="cat-bar"><div class="seg-check" style="width:59%"></div><div class="seg-bet" style="width:41%"></div></div><div class="cat-pct">59/41</div></div>
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:65%"></div><div class="seg-bet" style="width:35%"></div></div><div class="cat-pct">65/35</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:64%"></div><div class="seg-bet" style="width:36%"></div></div><div class="cat-pct">64/36</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:72%"></div><div class="seg-bet" style="width:28%"></div></div><div class="cat-pct">72/28</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:65%"></div><div class="seg-bet" style="width:35%"></div></div><div class="cat-pct">65/35</div></div>
+        </div>
+        <div class="note"><strong>Mostly check.</strong> Very wet board — ακόμα και Straights checkάρουν 59%. Smaller sizing όταν bet.</div>
+      </div>
+
+      <!-- T75 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">T</div>
+            <div class="card-chip card-green">7</div>
+            <div class="card-chip card-red">5</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Mid semi-wet</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:68%"></div><div class="seg-bet" style="width:32%"></div></div>
+              <div class="overall-nums">68 / 32</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:52%"></div><div class="seg-bet" style="width:48%"></div></div><div class="cat-pct">52/48</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:62%"></div><div class="seg-bet" style="width:38%"></div></div><div class="cat-pct">62/38</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:70%"></div><div class="seg-bet" style="width:30%"></div></div><div class="cat-pct">70/30</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:77%"></div><div class="seg-bet" style="width:23%"></div></div><div class="cat-pct">77/23</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Check-heavy.</strong> Draws checkάρουν 77% — board too connected για OOP betting.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MID/LOW DRY -->
+  <div class="section">
+    <div class="section-title">Mid / Low dry boards <span class="section-badge badge-unpaired">dry low</span></div>
+    <div class="boards-grid">
+
+      <!-- J82 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">J</div>
+            <div class="card-chip card-blue">8</div>
+            <div class="card-chip card-red">2</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Mid semi-dry</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:64%"></div><div class="seg-bet" style="width:36%"></div></div>
+              <div class="overall-nums">64 / 36</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:45%"></div><div class="seg-bet" style="width:55%"></div></div><div class="cat-pct">45/55</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:53%"></div><div class="seg-bet" style="width:47%"></div></div><div class="cat-pct">53/47</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:65%"></div><div class="seg-bet" style="width:35%"></div></div><div class="cat-pct">65/35</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:74%"></div><div class="seg-bet" style="width:26%"></div></div><div class="cat-pct">74/26</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note">Set bets 55% — μόνη κατηγορία που bets περισσότερο. Draws mostly check (74%).</div>
+      </div>
+
+      <!-- J53 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">J</div>
+            <div class="card-chip card-blue">5</div>
+            <div class="card-chip card-red">3</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Mid dry</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:82%"></div><div class="seg-bet" style="width:18%"></div></div>
+              <div class="overall-nums">82 / 18</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:64%"></div><div class="seg-bet" style="width:36%"></div></div><div class="cat-pct">64/36</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:78%"></div><div class="seg-bet" style="width:22%"></div></div><div class="cat-pct">78/22</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:82%"></div><div class="seg-bet" style="width:18%"></div></div><div class="cat-pct">82/18</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:88%"></div><div class="seg-bet" style="width:12%"></div></div><div class="cat-pct">88/12</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Very passive.</strong> Ακόμα και Set checkάρει 64%. Low disconnected board — BB hits hard.</div>
+      </div>
+
+      <!-- 742 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">7</div>
+            <div class="card-chip card-blue">4</div>
+            <div class="card-chip card-red">2</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Low dry rainbow</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:87%"></div><div class="seg-bet" style="width:13%"></div></div>
+              <div class="overall-nums">87 / 13</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-threequarter">3/4 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:67%"></div><div class="seg-bet" style="width:33%"></div></div><div class="cat-pct">67/33</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:76%"></div><div class="seg-bet" style="width:24%"></div></div><div class="cat-pct">76/24</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:87%"></div><div class="seg-bet" style="width:13%"></div></div><div class="cat-pct">87/13</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:93%"></div><div class="seg-bet" style="width:7%"></div></div><div class="cat-pct">93/7</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Almost always check.</strong> Low dry board — SB range misses almost entirely. Bet only Sets/strong Two pair.</div>
+      </div>
+
+      <!-- 743 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">7</div>
+            <div class="card-chip card-blue">4</div>
+            <div class="card-chip card-green">3</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Low connected</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:92%"></div><div class="seg-bet" style="width:8%"></div></div>
+              <div class="overall-nums">92 / 8</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Straight</div><div class="cat-bar"><div class="seg-check" style="width:81%"></div><div class="seg-bet" style="width:19%"></div></div><div class="cat-pct">81/19</div></div>
+          <div class="cat-row"><div class="cat-label">Set</div><div class="cat-bar"><div class="seg-check" style="width:89%"></div><div class="seg-bet" style="width:11%"></div></div><div class="cat-pct">89/11</div></div>
+          <div class="cat-row"><div class="cat-label">Two pair</div><div class="cat-bar"><div class="seg-check" style="width:90%"></div><div class="seg-bet" style="width:10%"></div></div><div class="cat-pct">90/10</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:93%"></div><div class="seg-bet" style="width:7%"></div></div><div class="cat-pct">93/7</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:92%"></div><div class="seg-bet" style="width:8%"></div></div><div class="cat-pct">92/8</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Check everything.</strong> Ακόμα και Straights checkάρουν 81% — most passive board. BB connects everywhere.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PAIRED ══════════ -->
+<div id="tab-pf-paired" class="content">
+
+  <div class="legend-bar">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--check)"></div>Check</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--bet)"></div>Bet</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">High paired boards <span class="section-badge badge-paired">paired</span></div>
+    <div class="boards-grid">
+
+      <!-- KKT -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">K</div>
+            <div class="card-chip card-black">K</div>
+            <div class="card-chip card-blue">T</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">High paired</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:68%"></div><div class="seg-bet" style="width:32%"></div></div>
+              <div class="overall-nums">68 / 32</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Quads</div><div class="cat-bar"><div class="seg-check" style="width:67%"></div><div class="seg-bet" style="width:33%"></div></div><div class="cat-pct">67/33</div></div>
+          <div class="cat-row"><div class="cat-label">Full House</div><div class="cat-bar"><div class="seg-check" style="width:60%"></div><div class="seg-bet" style="width:40%"></div></div><div class="cat-pct">60/40</div></div>
+          <div class="cat-row"><div class="cat-label">Trips</div><div class="cat-bar"><div class="seg-check" style="width:62%"></div><div class="seg-bet" style="width:38%"></div></div><div class="cat-pct">62/38</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:75%"></div><div class="seg-bet" style="width:25%"></div></div><div class="cat-pct">75/25</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:59%"></div><div class="seg-bet" style="width:41%"></div></div><div class="cat-pct">59/41</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:72%"></div><div class="seg-bet" style="width:28%"></div></div><div class="cat-pct">72/28</div></div>
+        </div>
+        <div class="note"><strong>Paired board — slow play.</strong> Ακόμα και Quads και Full House mostly check. Trapping strategy.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Mid paired boards <span class="section-badge badge-paired">paired</span></div>
+    <div class="boards-grid">
+
+      <!-- JJT -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">J</div>
+            <div class="card-chip card-blue">J</div>
+            <div class="card-chip card-green">T</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Mid paired connected</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:71%"></div><div class="seg-bet" style="width:29%"></div></div>
+              <div class="overall-nums">71 / 29</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Quads</div><div class="cat-bar"><div class="seg-check" style="width:61%"></div><div class="seg-bet" style="width:39%"></div></div><div class="cat-pct">61/39</div></div>
+          <div class="cat-row"><div class="cat-label">Full House</div><div class="cat-bar"><div class="seg-check" style="width:64%"></div><div class="seg-bet" style="width:36%"></div></div><div class="cat-pct">64/36</div></div>
+          <div class="cat-row"><div class="cat-label">Trips</div><div class="cat-bar"><div class="seg-check" style="width:66%"></div><div class="seg-bet" style="width:34%"></div></div><div class="cat-pct">66/34</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:75%"></div><div class="seg-bet" style="width:25%"></div></div><div class="cat-pct">75/25</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:69%"></div><div class="seg-bet" style="width:31%"></div></div><div class="cat-pct">69/31</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:78%"></div><div class="seg-bet" style="width:22%"></div></div><div class="cat-pct">78/22</div></div>
+        </div>
+        <div class="note"><strong>Passive across board.</strong> Ακόμα και strong hands mostly check — trap heavy strategy on paired boards.</div>
+      </div>
+
+      <!-- 855 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">8</div>
+            <div class="card-chip card-blue">5</div>
+            <div class="card-chip card-green">5</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Low paired</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:89%"></div><div class="seg-bet" style="width:11%"></div></div>
+              <div class="overall-nums">89 / 11</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Quads</div><div class="cat-bar"><div class="seg-check" style="width:72%"></div><div class="seg-bet" style="width:28%"></div></div><div class="cat-pct">72/28</div></div>
+          <div class="cat-row"><div class="cat-label">Full House</div><div class="cat-bar"><div class="seg-check" style="width:74%"></div><div class="seg-bet" style="width:26%"></div></div><div class="cat-pct">74/26</div></div>
+          <div class="cat-row"><div class="cat-label">Trips</div><div class="cat-bar"><div class="seg-check" style="width:89%"></div><div class="seg-bet" style="width:11%"></div></div><div class="cat-pct">89/11</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:87%"></div><div class="seg-bet" style="width:13%"></div></div><div class="cat-pct">87/13</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:97%"></div><div class="seg-bet" style="width:3%"></div></div><div class="cat-pct">97/3</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Almost never bet.</strong> Draws check 97% — low paired board, SB range doesn't connect. Extreme trap mode.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Low paired boards <span class="section-badge badge-paired">paired</span></div>
+    <div class="boards-grid">
+
+      <!-- 442 -->
+      <div class="board-card">
+        <div class="board-header">
+          <div class="board-cards">
+            <div class="card-chip card-black">4</div>
+            <div class="card-chip card-blue">4</div>
+            <div class="card-chip card-red">2</div>
+          </div>
+          <div class="board-meta">
+            <div class="board-texture">Low paired dry</div>
+            <div class="board-overall">
+              <div class="overall-bar"><div class="seg-check" style="width:95%"></div><div class="seg-bet" style="width:5%"></div></div>
+              <div class="overall-nums">95 / 5</div>
+            </div>
+          </div>
+        </div>
+        <div class="board-sizing"><span class="sizing-tag sizing-half">1/2 pot</span></div>
+        <div class="divider"></div>
+        <div class="cats">
+          <div class="cat-row"><div class="cat-label">Quads</div><div class="cat-bar"><div class="seg-check" style="width:88%"></div><div class="seg-bet" style="width:12%"></div></div><div class="cat-pct">88/12</div></div>
+          <div class="cat-row"><div class="cat-label">Full House</div><div class="cat-bar"><div class="seg-check" style="width:97%"></div><div class="seg-bet" style="width:3%"></div></div><div class="cat-pct">97/3</div></div>
+          <div class="cat-row"><div class="cat-label">Trips</div><div class="cat-bar"><div class="seg-check" style="width:89%"></div><div class="seg-bet" style="width:11%"></div></div><div class="cat-pct">89/11</div></div>
+          <div class="cat-row"><div class="cat-label">One pair</div><div class="cat-bar"><div class="seg-check" style="width:95%"></div><div class="seg-bet" style="width:5%"></div></div><div class="cat-pct">95/5</div></div>
+          <div class="cat-row"><div class="cat-label">Draws</div><div class="cat-bar"><div class="seg-check" style="width:96%"></div><div class="seg-bet" style="width:4%"></div></div><div class="cat-pct">96/4</div></div>
+          <div class="cat-row"><div class="cat-label">Air</div><div class="cat-bar"><div class="seg-check" style="width:100%"></div></div><div class="cat-pct">100/0</div></div>
+        </div>
+        <div class="note"><strong>Never bet.</strong> Ακόμα και Quads check 88%. Most passive board — SB range completely misses low paired boards.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ HEURISTICS ══════════ -->
+<div id="tab-pf-heuristics" class="content">
+
+  <div class="section">
+    <div class="section-title">Πότε betάρεις OOP ως SB</div>
+    <div class="rule rule-green"><div class="rule-icon">▲</div><div><strong>Bet 3/4 pot:</strong> Ace-high boards (AK5, A96) — SB range hits A-boards πολύ σκληρά. Bet almost everything εκτός Air.</div></div>
+    <div class="rule rule-green"><div class="rule-icon">▲</div><div><strong>Bet mixed 50/50:</strong> Broadway connected (KJ6, KT9, QT7) — balanced strategy, bet value + draws.</div></div>
+    <div class="rule rule-amber"><div class="rule-icon">→</div><div><strong>Bet selectively:</strong> Mid boards (J82, T75) — μόνο Sets και strong Two pair. Draws mostly check.</div></div>
+    <div class="rule rule-red"><div class="rule-icon">▼</div><div><strong>Check almost always:</strong> Low boards (742, 743, J53, K63) — BB range connects. Check range, bet μόνο με nuts.</div></div>
+    <div class="rule rule-red"><div class="rule-icon">▼</div><div><strong>Check always:</strong> Paired boards (KKT, JJT, 855, 442) — trap mode. Ακόμα και Quads/Full House mostly check.</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Sizing rules</div>
+    <div class="two-col">
+      <div>
+        <div class="heuristic-card">
+          <div class="heuristic-title">3/4 pot <span class="h-badge h-bet">Polar sizing</span></div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">Χρησιμοποιείται σε boards που SB range έχει advantage: AK5, A96, KJ6, Q76, J82, J53, T75, 742.<br><br>Μεγαλύτερο sizing = ποιο polarized range = value ή bluff, λιγότερο medium hands.</div>
+        </div>
+      </div>
+      <div>
+        <div class="heuristic-card">
+          <div class="heuristic-title">1/2 pot <span class="h-badge h-check">Merged sizing</span></div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6">Χρησιμοποιείται σε wet/connected boards: A54, KT9, T87, 743, και όλα τα Paired boards.<br><br>Μικρότερο sizing = more hands can bet = merged range = λιγότερο exploitable.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Key patterns από τα data</div>
+    <div style="padding:14px 16px;background:var(--bg2);border:1px solid rgba(245,158,11,0.25);border-radius:10px;margin-bottom:12px;">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--amber);margin-bottom:10px">Anti-intuitive spots</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.9">
+        <div>• <strong style="color:var(--text)">Sets check on low boards (742, J53)</strong> — 64-67% check rate. Δεν είναι auto-bet.</div>
+        <div>• <strong style="color:var(--text)">Straights check on wet boards (T87, 743)</strong> — 59-81% check rate. Board too connected.</div>
+        <div>• <strong style="color:var(--text)">Quads check on paired boards</strong> — 67-88% check rate. Extreme slow play.</div>
+        <div>• <strong style="color:var(--text)">AK5: Draws bet 92%</strong> — dry board, draws bet almost as often as made hands.</div>
+        <div>• <strong style="color:var(--text)">743: Everything checks</strong> — most passive board in dataset. 92% overall check.</div>
+      </div>
+    </div>
+
+    <div style="padding:14px 16px;background:var(--bg2);border:1px solid rgba(74,158,255,0.2);border-radius:10px;">
+      <div style="font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--blue);margin-bottom:10px">General rules OOP SB</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.9">
+        <div>• <strong style="color:var(--text)">Board wetness</strong> = αντίστροφη σχέση με bet frequency. Wetter board = λιγότερο bet.</div>
+        <div>• <strong style="color:var(--text)">High card advantage</strong> = bet more. SB range hits A/K boards σκληρότερα.</div>
+        <div>• <strong style="color:var(--text)">Low cards</strong> = check more. BB calling range hits low boards καλύτερα.</div>
+        <div>• <strong style="color:var(--text)">Paired boards</strong> = always check-heavy ανεξάρτητα από hand strength.</div>
+        <div>• <strong style="color:var(--text)">Air</strong> = always check. Δεν υπάρχει board που Air bets σημαντικά.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
 function show(name) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav > .nav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
   event.currentTarget.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'spr') {
+    document.getElementById('spr-sub-unpaired').classList.add('active');
+    document.getElementById('tab-pf-unpaired').classList.add('active');
+  }
+}
+function showSpr(name) {
+  document.querySelectorAll('[id^="spr-sub-"]').forEach(t => t.classList.remove('active'));
+  ['tab-pf-unpaired','tab-pf-paired','tab-pf-heuristics'].forEach(id => {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  document.getElementById('spr-sub-' + name.replace('pf-','')).classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
 }
 function selectPlayer(name) {
