@@ -1,2 +1,0 @@
-# PLO-STUDY
-BvB 
